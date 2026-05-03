@@ -30,6 +30,18 @@ public class UserService {
     }
 
     public Optional<User> findByCorreo(String correo) {
-        return userRepository.findByCorreo(correo);
+        return userRepository.buscarPorCorreo(correo);
+    }
+
+    public List<User> listarUsuariosConRol(String nombreRol) {
+        return userRepository.listarUsuariosConRol(nombreRol);
+    }
+
+    public List<User> buscarPorCiudad(String ciudad) {
+        return userRepository.buscarPorCiudad(ciudad);
+    }
+
+    public List<User> buscarPorModalidad(String modalidad) {
+        return userRepository.buscarPorModalidad(modalidad);
     }
 }

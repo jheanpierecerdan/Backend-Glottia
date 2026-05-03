@@ -44,4 +44,41 @@ public class UserController {
         userService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Actualizar un usuario")
+    public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody User user) {
+        return userService.findById(id)
+                .map(existingUser -> {
+                    user.setIdUsuario(id);
+                    return ResponseEntity.ok(userService.save(user));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/correo/{correo}")
+    @Operation(summary = "Buscar usuario por correo")
+    public ResponseEntity<User> getUserByCorreo(@PathVariable String correo) {
+        return userService.findByCorreo(correo)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/rol/{nombreRol}")
+    @Operation(summary = "Listar usuarios por rol")
+    public List<User> getUsuariosPorRol(@PathVariable String nombreRol) {
+        return userService.listarUsuariosConRol(nombreRol);
+    }
+
+    @GetMapping("/ciudad/{ciudad}")
+    @Operation(summary = "Buscar usuarios por ciudad")
+    public List<User> getUsuariosPorCiudad(@PathVariable String ciudad) {
+        return userService.buscarPorCiudad(ciudad);
+    }
+
+    @GetMapping("/modalidad/{modalidad}")
+    @Operation(summary = "Buscar usuarios por modalidad")
+    public List<User> getUsuariosPorModalidad(@PathVariable String modalidad) {
+        return userService.buscarPorModalidad(modalidad);
+    }
 }

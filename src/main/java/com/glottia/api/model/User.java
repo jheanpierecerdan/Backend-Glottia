@@ -52,13 +52,8 @@ public class User {
     @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
     private List<UserLanguage> idiomas;
 
-    @ManyToMany
-    @JoinTable(
-        name = "usuariointereses",
-        joinColumns = @JoinColumn(name = "idusuario"),
-        inverseJoinColumns = @JoinColumn(name = "idinteres")
-    )
-    private Set<Interest> intereses;
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    private List<UserInterest> intereses;
 
     @PrePersist
     protected void onCreate() {
