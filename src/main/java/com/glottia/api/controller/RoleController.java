@@ -44,4 +44,15 @@ public class RoleController {
         roleService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Actualizar un rol")
+    public ResponseEntity<Role> updateRole(@PathVariable Integer id, @RequestBody Role role) {
+        return roleService.findById(id)
+                .map(existingRole -> {
+                    role.setIdRol(id);
+                    return ResponseEntity.ok(roleService.save(role));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 }
