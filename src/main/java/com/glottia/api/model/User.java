@@ -1,10 +1,8 @@
-package com.glottia.api.model;
+﻿package com.glottia.api.model;
 
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table(name = "usuarios")
@@ -48,12 +46,6 @@ public class User {
     @ManyToOne
     @JoinColumn(name = "idrol")
     private Role rol;
-
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private List<UserLanguage> idiomas;
-
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private List<UserInterest> intereses;
 
     @PrePersist
     protected void onCreate() {

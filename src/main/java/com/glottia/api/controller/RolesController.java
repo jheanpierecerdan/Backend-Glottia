@@ -1,4 +1,4 @@
-package com.glottia.api.controller;
+﻿package com.glottia.api.controller;
 
 import com.glottia.api.model.Role;
 import com.glottia.api.service.RoleService;
@@ -12,8 +12,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/roles")
-@Tag(name = "Roles", description = "Gestión de roles de usuario")
-public class RoleController {
+@Tag(name = "Roles", description = "GestiÃ³n de roles de usuario")
+public class RolesController {
 
     @Autowired
     private RoleService roleService;
