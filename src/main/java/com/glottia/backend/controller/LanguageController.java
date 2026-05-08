@@ -1,4 +1,4 @@
 package com.glottia.backend.controller;
 
-public class LenguageController {
+public class LanguageController {
 }

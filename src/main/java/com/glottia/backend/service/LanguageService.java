@@ -1,4 +1,4 @@
 package com.glottia.backend.service;
 
-public class LenguageService {
+public class LanguageService {
 }
