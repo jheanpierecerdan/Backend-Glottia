@@ -1,4 +1,7 @@
 package com.glottia.backend.repository;
 
-public class UserRepository {
+
+@Repository
+public interface UserInterestRepository extends JpaRepository<UserInterest, Integer> {
+
 }
