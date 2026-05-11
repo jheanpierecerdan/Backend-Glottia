@@ -2,7 +2,8 @@ package com.glottia.backend.controller;
 
 import com.glottia.backend.dto.EventDTO;
 import com.glottia.backend.entity.Event;
-import com.glottia.backend.mapper.EntityMapper;
+import com.glottia.backend.entity.Language;
+import com.glottia.backend.entity.User;
 import com.glottia.backend.service.EventService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,14 +22,11 @@ public class EventController {
     @Autowired
     private EventService eventService;
 
-    @Autowired
-    private EntityMapper mapper;
-
     @GetMapping
     @Operation(summary = "Listar todos los eventos")
     public List<EventDTO> getAllEvents() {
         return eventService.findAll().stream()
-                .map(mapper::toEventDTO)
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
@@ -36,7 +34,7 @@ public class EventController {
     @Operation(summary = "Obtener un evento por ID")
     public ResponseEntity<EventDTO> getEventById(@PathVariable Integer id) {
         return eventService.findById(id)
-                .map(mapper::toEventDTO)
+                .map(this::convertToDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -44,8 +42,8 @@ public class EventController {
     @PostMapping
     @Operation(summary = "Crear un nuevo evento")
     public EventDTO createEvent(@RequestBody EventDTO eventDto) {
-        Event event = mapper.toEventEntity(eventDto);
-        return mapper.toEventDTO(eventService.save(event));
+        Event event = convertToEntity(eventDto);
+        return convertToDto(eventService.save(event));
     }
 
     @DeleteMapping("/{id}")
@@ -60,9 +58,9 @@ public class EventController {
     public ResponseEntity<EventDTO> updateEvent(@PathVariable Integer id, @RequestBody EventDTO eventDto) {
         return eventService.findById(id)
                 .map(existingEvent -> {
-                    Event event = mapper.toEventEntity(eventDto);
+                    Event event = convertToEntity(eventDto);
                     event.setIdEvento(id);
-                    return ResponseEntity.ok(mapper.toEventDTO(eventService.save(event)));
+                    return ResponseEntity.ok(convertToDto(eventService.save(event)));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -71,7 +69,7 @@ public class EventController {
     @Operation(summary = "Listar eventos activos")
     public List<EventDTO> getEventosActivos() {
         return eventService.listarEventosActivos().stream()
-                .map(mapper::toEventDTO)
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
@@ -79,7 +77,7 @@ public class EventController {
     @Operation(summary = "Buscar eventos por ID de idioma")
     public List<EventDTO> getEventosPorIdioma(@PathVariable Integer idIdioma) {
         return eventService.buscarEventosPorIdioma(idIdioma).stream()
-                .map(mapper::toEventDTO)
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
@@ -87,7 +85,7 @@ public class EventController {
     @Operation(summary = "Buscar eventos por modalidad")
     public List<EventDTO> getEventosPorModalidad(@PathVariable String modalidad) {
         return eventService.buscarEventosPorModalidad(modalidad).stream()
-                .map(mapper::toEventDTO)
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
@@ -95,7 +93,7 @@ public class EventController {
     @Operation(summary = "Listar eventos futuros")
     public List<EventDTO> getEventosFuturos() {
         return eventService.listarEventosFuturos().stream()
-                .map(mapper::toEventDTO)
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
@@ -103,7 +101,53 @@ public class EventController {
     @Operation(summary = "Obtener eventos creados por un usuario")
     public List<EventDTO> getEventosPorCreador(@PathVariable Integer idUsuario) {
         return eventService.obtenerEventosPorUsuarioCreador(idUsuario).stream()
-                .map(mapper::toEventDTO)
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
+    }
+
+    private EventDTO convertToDto(Event event) {
+        if (event == null) return null;
+        EventDTO dto = new EventDTO();
+        dto.setIdEvento(event.getIdEvento());
+        dto.setTitulo(event.getTitulo());
+        dto.setDescripcion(event.getDescripcion());
+        dto.setModalidad(event.getModalidad());
+        dto.setFechaHora(event.getFechaHora());
+        dto.setCupoMaximo(event.getCupoMaximo());
+        dto.setUbicacion(event.getUbicacion());
+        dto.setEnlaceVirtual(event.getEnlaceVirtual());
+        dto.setEstado(event.getEstado());
+        if (event.getIdioma() != null) {
+            dto.setIdIdioma(event.getIdioma().getIdIdioma());
+        }
+        if (event.getOrganizador() != null) {
+            dto.setIdOrganizador(event.getOrganizador().getIdUsuario());
+        }
+        return dto;
+    }
+
+    private Event convertToEntity(EventDTO dto) {
+        if (dto == null) return null;
+        Event event = new Event();
+        event.setIdEvento(dto.getIdEvento());
+        event.setTitulo(dto.getTitulo());
+        event.setDescripcion(dto.getDescripcion());
+        event.setModalidad(dto.getModalidad());
+        event.setFechaHora(dto.getFechaHora());
+        event.setCupoMaximo(dto.getCupoMaximo());
+        event.setUbicacion(dto.getUbicacion());
+        event.setEnlaceVirtual(dto.getEnlaceVirtual());
+        event.setEstado(dto.getEstado());
+        if (dto.getIdIdioma() != null) {
+            Language language = new Language();
+            language.setIdIdioma(dto.getIdIdioma());
+            event.setIdioma(language);
+        }
+        if (dto.getIdOrganizador() != null) {
+            User user = new User();
+            user.setIdUsuario(dto.getIdOrganizador());
+            event.setOrganizador(user);
+        }
+        return event;
     }
 }
