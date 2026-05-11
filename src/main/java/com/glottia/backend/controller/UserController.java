@@ -1,11 +1,9 @@
 package com.glottia.backend.controller;
 
-import com.glottia.backend.dto.ReservationDTO;
 import com.glottia.backend.dto.UserDTO;
-import com.glottia.backend.entity.Event;
-import com.glottia.backend.entity.Reservation;
+import com.glottia.backend.entity.Role;
 import com.glottia.backend.entity.User;
-import com.glottia.backend.service.ReservationService;
+import com.glottia.backend.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,119 +14,90 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/reservations")
-@Tag(name = "Reservas", description = "Gestión de reservas de eventos")
-public class ReservationController {
+@RequestMapping("/api/users")
+@Tag(name = "Usuarios", description = "Gestión de usuarios de Glottia")
+public class UserController {
 
     @Autowired
-    private ReservationService reservationService;
+    private UserService userService;
 
     @GetMapping
-    @Operation(summary = "Listar todas las reservas")
-    public List<ReservationDTO> getAllReservations() {
-        return reservationService.findAll().stream()
+    @Operation(summary = "Listar todos los usuarios")
+    public List<UserDTO> getAllUsers() {
+        return userService.findAll().stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Obtener una reserva por ID")
-    public ResponseEntity<ReservationDTO> getReservationById(@PathVariable Integer id) {
-        return reservationService.findById(id)
+    @Operation(summary = "Obtener un usuario por ID")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable Integer id) {
+        return userService.findById(id)
                 .map(this::convertToDto)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
-    @Operation(summary = "Crear una nueva reserva")
-    public ReservationDTO createReservation(@RequestBody ReservationDTO reservationDto) {
-        Reservation reservation = convertToEntity(reservationDto);
-        return convertToDto(reservationService.save(reservation));
+    @Operation(summary = "Crear un nuevo usuario")
+    public UserDTO createUser(@RequestBody UserDTO userDto) {
+        User user = convertToEntity(userDto);
+        return convertToDto(userService.save(user));
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Eliminar un usuario")
+    public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
+        userService.deleteById(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
-    @Operation(summary = "Actualizar una reserva")
-    public ResponseEntity<ReservationDTO> updateReservation(@PathVariable Integer id, @RequestBody ReservationDTO reservationDto) {
-        return reservationService.findById(id)
-                .map(existingReservation -> {
-                    Reservation reservation = convertToEntity(reservationDto);
-                    reservation.setIdReserva(id);
-                    return ResponseEntity.ok(convertToDto(reservationService.save(reservation)));
+    @Operation(summary = "Actualizar un usuario")
+    public ResponseEntity<UserDTO> updateUser(@PathVariable Integer id, @RequestBody UserDTO userDto) {
+        return userService.findById(id)
+                .map(existingUser -> {
+                    User user = convertToEntity(userDto);
+                    user.setIdUsuario(id);
+                    return ResponseEntity.ok(convertToDto(userService.save(user)));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/usuario/{idUsuario}")
-    @Operation(summary = "Listar reservas por usuario")
-    public List<ReservationDTO> getReservasPorUsuario(@PathVariable Integer idUsuario) {
-        return reservationService.listarReservasPorUsuario(idUsuario).stream()
+    @GetMapping("/correo/{correo}")
+    @Operation(summary = "Buscar usuario por correo")
+    public ResponseEntity<UserDTO> getUserByCorreo(@PathVariable String correo) {
+        return userService.findByCorreo(correo)
+                .map(this::convertToDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/rol/{nombreRol}")
+    @Operation(summary = "Listar usuarios por rol")
+    public List<UserDTO> getUsuariosPorRol(@PathVariable String nombreRol) {
+        return userService.listarUsuariosConRol(nombreRol).stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/evento/{idEvento}/participantes")
-    @Operation(summary = "Listar participantes por evento")
-    public List<UserDTO> getParticipantesPorEvento(@PathVariable Integer idEvento) {
-        return reservationService.listarParticipantesPorEvento(idEvento).stream()
-                .map(this::convertToUserDto)
+    @GetMapping("/ciudad/{ciudad}")
+    @Operation(summary = "Buscar usuarios por ciudad")
+    public List<UserDTO> getUsuariosPorCiudad(@PathVariable String ciudad) {
+        return userService.buscarPorCiudad(ciudad).stream()
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
-    @GetMapping("/evento/{idEvento}/conteo")
-    @Operation(summary = "Contar reservas por evento")
-    public Long contarReservasPorEvento(@PathVariable Integer idEvento) {
-        return reservationService.contarReservasPorEvento(idEvento);
+    @GetMapping("/modalidad/{modalidad}")
+    @Operation(summary = "Buscar usuarios por modalidad")
+    public List<UserDTO> getUsuariosPorModalidad(@PathVariable String modalidad) {
+        return userService.buscarPorModalidad(modalidad).stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
-    @GetMapping("/validar/{idUsuario}/{idEvento}")
-    @Operation(summary = "Validar si existe reserva de un usuario para un evento")
-    public boolean validarReservaExistente(@PathVariable Integer idUsuario, @PathVariable Integer idEvento) {
-        return reservationService.validarReservaExistente(idUsuario, idEvento);
-    }
-
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Eliminar una reserva")
-    public ResponseEntity<Void> deleteReservation(@PathVariable Integer id) {
-        reservationService.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
-
-    private ReservationDTO convertToDto(Reservation reservation) {
-        if (reservation == null) return null;
-        ReservationDTO dto = new ReservationDTO();
-        dto.setIdReserva(reservation.getIdReserva());
-        dto.setFechaReserva(reservation.getFechaReserva());
-        dto.setEstadoReserva(reservation.getEstadoReserva());
-        if (reservation.getUsuario() != null) {
-            dto.setIdUsuario(reservation.getUsuario().getIdUsuario());
-        }
-        if (reservation.getEvento() != null) {
-            dto.setIdEvento(reservation.getEvento().getIdEvento());
-        }
-        return dto;
-    }
-
-    private Reservation convertToEntity(ReservationDTO dto) {
-        if (dto == null) return null;
-        Reservation reservation = new Reservation();
-        reservation.setIdReserva(dto.getIdReserva());
-        reservation.setFechaReserva(dto.getFechaReserva());
-        reservation.setEstadoReserva(dto.getEstadoReserva());
-        if (dto.getIdUsuario() != null) {
-            User user = new User();
-            user.setIdUsuario(dto.getIdUsuario());
-            reservation.setUsuario(user);
-        }
-        if (dto.getIdEvento() != null) {
-            Event event = new Event();
-            event.setIdEvento(dto.getIdEvento());
-            reservation.setEvento(event);
-        }
-        return reservation;
-    }
-
-    private UserDTO convertToUserDto(User user) {
+    private UserDTO convertToDto(User user) {
         if (user == null) return null;
         UserDTO dto = new UserDTO();
         dto.setIdUsuario(user.getIdUsuario());
@@ -145,5 +114,26 @@ public class ReservationController {
             dto.setIdRol(user.getRol().getIdRol());
         }
         return dto;
+    }
+
+    private User convertToEntity(UserDTO dto) {
+        if (dto == null) return null;
+        User user = new User();
+        user.setIdUsuario(dto.getIdUsuario());
+        user.setNombre(dto.getNombre());
+        user.setApellido(dto.getApellido());
+        user.setCorreo(dto.getCorreo());
+        user.setContrasena(dto.getContrasena());
+        user.setCiudad(dto.getCiudad());
+        user.setBiografia(dto.getBiografia());
+        user.setModalidad(dto.getModalidad());
+        user.setFechaRegistro(dto.getFechaRegistro());
+        user.setEstado(dto.getEstado());
+        if (dto.getIdRol() != null) {
+            Role role = new Role();
+            role.setIdRol(dto.getIdRol());
+            user.setRol(role);
+        }
+        return user;
     }
 }
