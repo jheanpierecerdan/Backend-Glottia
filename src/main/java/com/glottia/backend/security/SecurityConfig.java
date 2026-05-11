@@ -45,7 +45,7 @@ public class SecurityConfig {
                 .cors(withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/ingresos", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**", "/api-docs", "/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
+                        .requestMatchers("/", "/error", "/ingresos", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**", "/api-docs", "/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
                         // ESTUDIANTE: visualizar eventos y participar (reservar)
                         .requestMatchers("/api/events/**").hasAnyRole("ESTUDIANTE", "DOCENTE", "ORGANIZADOR", "ADMINISTRADOR")
                         .requestMatchers("/api/reservations/**").hasAnyRole("ESTUDIANTE", "ADMINISTRADOR")
