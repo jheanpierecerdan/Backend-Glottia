@@ -1,6 +1,8 @@
 package com.glottia.backend.controller;
 
+import com.glottia.backend.dto.LanguageDTO;
 import com.glottia.backend.entity.Language;
+import com.glottia.backend.mapper.EntityMapper;
 import com.glottia.backend.service.LanguageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -9,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/languages")
@@ -18,33 +21,41 @@ public class LanguageController {
     @Autowired
     private LanguageService languageService;
 
+    @Autowired
+    private EntityMapper mapper;
+
     @GetMapping
     @Operation(summary = "Listar todos los idiomas")
-    public List<Language> getAllLanguages() {
-        return languageService.findAll();
+    public List<LanguageDTO> getAllLanguages() {
+        return languageService.findAll().stream()
+                .map(mapper::toLanguageDTO)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
     @Operation(summary = "Obtener un idioma por ID")
-    public ResponseEntity<Language> getLanguageById(@PathVariable Integer id) {
+    public ResponseEntity<LanguageDTO> getLanguageById(@PathVariable Integer id) {
         return languageService.findById(id)
+                .map(mapper::toLanguageDTO)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @Operation(summary = "Crear un nuevo idioma")
-    public Language createLanguage(@RequestBody Language language) {
-        return languageService.save(language);
+    public LanguageDTO createLanguage(@RequestBody LanguageDTO languageDto) {
+        Language language = mapper.toLanguageEntity(languageDto);
+        return mapper.toLanguageDTO(languageService.save(language));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Actualizar un idioma")
-    public ResponseEntity<Language> updateLanguage(@PathVariable Integer id, @RequestBody Language language) {
+    public ResponseEntity<LanguageDTO> updateLanguage(@PathVariable Integer id, @RequestBody LanguageDTO languageDto) {
         return languageService.findById(id)
                 .map(existingLanguage -> {
+                    Language language = mapper.toLanguageEntity(languageDto);
                     language.setIdIdioma(id);
-                    return ResponseEntity.ok(languageService.save(language));
+                    return ResponseEntity.ok(mapper.toLanguageDTO(languageService.save(language)));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
