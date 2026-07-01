@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class HomeController {
 
-    @Value("${app.frontend-url:https://glottia.vercel.app}")
+    @Value("${app.frontend-url:https://glottia-frontend.onrender.com}")
     private String frontendUrl;
 
     @GetMapping("/")
